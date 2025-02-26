@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil del Empleado</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        .perfil { border: 1px solid #ddd; padding: 20px; border-radius: 10px; max-width: 400px; margin: auto; }
+        .habilidades { text-align: left; margin-top: 20px; }
+        ul { list-style-type: none; padding: 0; }
+        .certificado { color: green; font-weight: bold; }
+        .no-certificado { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div id="contenido" class="perfil">
+        <h2>Cargando...</h2>
+    </div>
+
+    <script>
+        // URL de la API de Google Apps Script
+        const API_URL = "https://script.google.com/macros/s/AKfycbwEuGdGyBh0GnEmFC4s2YnYlQntRerXqJwKACbkG0GYctUXrNFhNst4YUtG1xb_iAiHGA/exec";
+
+        // Obtener ID de la URL
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get("id");
+
+        if (id) {
+            fetch(`${API_URL}?id=${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        document.getElementById("contenido").innerHTML = "<h2>Empleado no encontrado</h2>";
+                    } else {
+                        let habilidades = "";
+                        Object.keys(data).forEach(key => {
+                            if (!["# RELOJ", "NOMBRE DEL EMPLEADO", "FECHA INC", "TURNO", "Area"].includes(key)) {
+                                habilidades += `<li>${key}: <span class="${data[key] ? 'certificado' : 'no-certificado'}">
+                                    ${data[key] ? "✅ Certificado el " + data[key] : "❌ No certificado"}
+                                </span></li>`;
+                            }
+                        });
+
+                        document.getElementById("contenido").innerHTML = `
+                            <h2>${data["NOMBRE DEL EMPLEADO"]}</h2>
+                            <h3>${data["Area"]} - Turno ${data["TURNO"]}</h3>
+                            <div class="habilidades">
+                                <strong>Habilidades:</strong>
+                                <ul>${habilidades || "<li>Ninguna habilidad certificada</li>"}</ul>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    document.getElementById("contenido").innerHTML = "<h2>Error al cargar datos</h2>";
+                });
+        } else {
+            document.getElementById("contenido").innerHTML = "<h2>ID de empleado no encontrado</h2>";
+        }
+    </script>
+
+</body>
+</html>
